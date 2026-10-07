@@ -13,6 +13,7 @@ from app.render.pptx import PPTX_MEDIA_TYPE, render_deck_to_pptx
 from app.render.verify import verify_pptx
 from app.schemas.deck import DeckPublic
 from app.services.deck import load_slides, to_deck_public
+from app.services.evidence import evidence_notes
 from app.services.quality import build_quality_report, project_to_content_deck
 
 logger = logging.getLogger(__name__)
@@ -54,6 +55,13 @@ async def export_deck(project: OwnedProject, session: SessionDep) -> StreamingRe
         )
 
     deck = project_to_content_deck(project, slides)
+    by_id = {str(slide.id): slide for slide in slides}
+    for content_slide in deck.slides:
+        row = by_id[str(content_slide.id)]
+        notes = evidence_notes(project, row.outline_page_id)
+        content_slide.speaker_notes = "\n\n".join(
+            text for text in (content_slide.speaker_notes, notes) if text
+        )
     try:
         buffer = render_deck_to_pptx(deck, theme=resolve_project_theme(project))
         payload = buffer.getvalue()

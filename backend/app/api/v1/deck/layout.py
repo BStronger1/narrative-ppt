@@ -33,6 +33,7 @@ from app.schemas.deck import (
     UnlockFlexRequest,
 )
 from app.services.deck import load_slides
+from app.services.user_models import project_generator
 from app.worker.context import create_relayout_generator
 
 _PREFIX = "/projects/{project_id}/deck"
@@ -58,9 +59,7 @@ def _apply_flex_tree(slide: Slide, layout_tree: FlexContainer) -> None:
             detail=f"仍有内容块未放入布局树：{', '.join(sorted(unplaced))}",
         )
     bleedable = {
-        str(block.get("id"))
-        for block in slide.blocks
-        if str(block.get("type")) in BLEEDABLE_TYPES
+        str(block.get("id")) for block in slide.blocks if str(block.get("type")) in BLEEDABLE_TYPES
     }
     slide.layout_tree = _dump_layout_tree(restrict_bleed(tree, bleedable))
 
@@ -126,14 +125,14 @@ async def propose_relayout(
     _ensure_editable(slide, body.revision)
     tree = _require_flex_tree(slide)
 
-    generator = create_relayout_generator()
     try:
-        llm_trees = await generator.propose(
-            blocks=slide.blocks,
-            current_tree=tree,
-            page_title=slide.title,
-            count=2,
-        )
+        async with project_generator(project.id, create_relayout_generator) as generator:
+            llm_trees = await generator.propose(
+                blocks=slide.blocks,
+                current_tree=tree,
+                page_title=slide.title,
+                count=2,
+            )
     except LLMNotConfiguredError as error:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,

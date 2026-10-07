@@ -1,4 +1,4 @@
-.PHONY: up down install fonts dev-api dev-worker dev-java-api dev-java-worker dev-web migrate migration test lint gen-api regression
+.PHONY: up down install fonts dev-api dev-worker dev-web migrate migration test lint gen-api regression
 
 up:
 	docker compose up -d
@@ -18,13 +18,7 @@ dev-api:
 	cd backend && uv run uvicorn app.main:app --reload --host 127.0.0.1 --port 39800
 
 dev-worker:
-	cd backend && uv run arq app.worker.settings.WorkerSettings
-
-dev-java-api: migrate
-	cd java_backend && mvn spring-boot:run -Dspring-boot.run.jvmArguments="-Dfile.encoding=UTF-8"
-
-dev-java-worker: migrate
-	cd java_backend && mvn spring-boot:run -Dspring-boot.run.profiles=worker -Dspring-boot.run.jvmArguments="-Dfile.encoding=UTF-8"
+	cd backend && uv run python scripts/run_worker.py
 
 dev-web:
 	cd frontend && npm run dev

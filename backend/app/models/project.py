@@ -24,6 +24,7 @@ class Project(Base):
         index=True,
     )
     title: Mapped[str] = mapped_column(String(200), nullable=False)
+    brief: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
     audience: Mapped[str | None] = mapped_column(String(100))
     tone: Mapped[str] = mapped_column(String(32), nullable=False)
     page_count: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -107,6 +108,7 @@ class ProjectOutline(Base):
     )
     status: Mapped[str] = mapped_column(String(16), nullable=False, default="generating")
     pages: Mapped[list[dict]] = mapped_column(JSONB, nullable=False, default=list)
+    narrative: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     revision: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     job_id: Mapped[str | None] = mapped_column(String(100))
     input_signature: Mapped[str | None] = mapped_column(String(64))

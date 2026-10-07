@@ -11,7 +11,7 @@ def _hash_payload(payload: dict) -> str:
 
 
 def _core_payload(project: Project) -> dict:
-    return {
+    payload = {
         "title": project.title,
         "audience": project.audience,
         "tone": project.tone,
@@ -23,6 +23,10 @@ def _core_payload(project: Project) -> dict:
             for source in project.sources
         ],
     }
+    # 保留无 brief 的历史指纹；新设置一经修改必须重新生成大纲。
+    if getattr(project, "brief", None):
+        payload["brief"] = project.brief
+    return payload
 
 
 def project_input_signature(project: Project) -> str:

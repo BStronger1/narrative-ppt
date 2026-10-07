@@ -132,7 +132,7 @@ export function EditorWorkspace({ project }: { project: ProjectDetail }) {
     deleteSlide.error
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden">
+    <div className="flex h-full flex-col overflow-hidden">
       <WorkbenchHeader
         title={project.title}
         meta={

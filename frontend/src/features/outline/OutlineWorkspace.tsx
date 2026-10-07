@@ -13,6 +13,11 @@ import { errorMessage } from '@/lib/errors'
 import { cn } from '@/lib/utils'
 import { themeList } from '@/render/design'
 import { ThemeCover } from '@/render/ThemeCover'
+import { EvidenceDetails } from '@/features/outline/EvidenceDetails'
+import { MaterialSupplement } from '@/features/outline/MaterialSupplement'
+import { NarrativePlanPanel } from '@/features/outline/NarrativePlanPanel'
+import { AudienceBrief } from '@/features/projects/AudienceBrief'
+import { DEFAULT_BRIEF, type PresentationBrief } from '@/features/projects/audience'
 
 const MAX_KEY_POINTS = 5
 const MIN_KEY_POINTS = 2
@@ -46,7 +51,7 @@ export function OutlineWorkspace({ project }: { project: ProjectDetail }) {
             />
           </div>
           <p className="mt-3 text-xs text-ink-muted">
-            {progress.connectionError ? '进度连接中断，正在重连…' : '大纲只规划目标与要点，不生成正文'}
+            {progress.connectionError ? '进度连接中断，正在重连…' : '先规划听众叙事，再分配每页的目标、证据与讲述时间'}
           </p>
         </CenterCard>
       </Shell>
@@ -84,6 +89,8 @@ export function OutlineWorkspace({ project }: { project: ProjectDetail }) {
 function OutlineEditor({ project, outline }: { project: ProjectDetail; outline: Outline }) {
   const [pages, setPages] = useState<OutlinePage[]>(outline.pages)
   const [themeId, setThemeId] = useState(project.theme_id)
+  const [brief, setBrief] = useState<PresentationBrief>({ ...DEFAULT_BRIEF, ...project.brief })
+  const [audience, setAudience] = useState(project.audience ?? '')
   const target = project.page_count
 
   const save = useUpdateOutline(project.id)
@@ -166,7 +173,7 @@ function OutlineEditor({ project, outline }: { project: ProjectDetail; outline: 
           <Button
             variant="ghost"
             size="sm"
-            disabled={regenerate.isPending || launch.isPending}
+            disabled={regenerate.isPending || launch.isPending || persisting}
             onClick={() => {
               launch.reset()
               save.reset()
@@ -179,7 +186,7 @@ function OutlineEditor({ project, outline }: { project: ProjectDetail; outline: 
           </Button>
           <Button
             size="sm"
-            disabled={incomplete || draftingPoint || launch.isPending || updateProject.isPending}
+            disabled={incomplete || draftingPoint || launch.isPending || updateProject.isPending || regenerate.isPending}
             onClick={() => void startGeneration()}
           >
             {launch.isPending ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
@@ -203,9 +210,22 @@ function OutlineEditor({ project, outline }: { project: ProjectDetail; outline: 
             </p>
           )}
 
+          {outline.narrative && <NarrativePlanPanel plan={outline.narrative} />}
+          <details className="mb-5 rounded-2xl border border-line bg-surface p-5">
+            <summary className="cursor-pointer text-sm font-medium">调整听众或讲述方案</summary>
+            <div className="mt-4"><AudienceBrief value={brief} onChange={setBrief} onAudienceChange={setAudience} disabled={persisting || regenerate.isPending || launch.isPending} />
+              <label className="mt-4 block text-xs">具体听众描述<input value={audience} maxLength={100} onChange={e => setAudience(e.target.value)} className="mt-2 w-full rounded-xl border border-line px-3 py-2 text-sm" /></label>
+              <Button className="mt-4" variant="ghost" disabled={persisting || regenerate.isPending || launch.isPending || dirty} onClick={() => {
+                void updateProject.mutateAsync({ brief: { ...brief, narrative_enabled: true }, audience: audience || null })
+                  .then(() => regenerate.mutateAsync()).catch(() => { /* mutations display errors */ })
+              }}>按新要求重新规划大纲</Button>
+              <p className="mt-2 text-xs text-ink-muted">会替换当前大纲；已有页面修改需先保存完成。</p>
+            </div>
+          </details>
           <ol className="flex flex-col gap-3">
             {pages.map((page, index) => (
               <PageCard
+                project={project}
                 key={page.id}
                 page={page}
                 index={index}
@@ -249,6 +269,13 @@ function OutlineEditor({ project, outline }: { project: ProjectDetail; outline: 
         </div>
 
         <aside className="flex flex-col gap-3 lg:sticky lg:top-20 lg:self-start">
+          <div className="rounded-2xl border border-line bg-surface p-4 text-xs leading-relaxed text-ink-soft">
+            <p className="font-semibold">{project.brief?.scenario === 'defense' ? '项目答辩' : '通用汇报'} · {project.brief?.duration_minutes ?? 5} 分钟</p>
+            <p className="mt-1">面向 {project.audience || '一般听众'}</p>
+            {project.brief?.focus && <p className="mt-1">重点：{project.brief.focus}</p>}
+          </div>
+          <MaterialSupplement projectId={project.id} disabled={launch.isPending || regenerate.isPending || persisting || dirty}
+            onRegenerate={() => regenerate.mutate()} />
           <div>
             <h3 className="text-sm font-semibold tracking-tight">外观</h3>
             <p className="mt-1 text-xs text-ink-muted">决定成品的字体、配色与气质；切换后点「生成 PPT」时生效</p>
@@ -283,6 +310,7 @@ function OutlineEditor({ project, outline }: { project: ProjectDetail; outline: 
 }
 
 function PageCard({
+  project,
   page,
   index,
   dragProps,
@@ -292,6 +320,7 @@ function PageCard({
   onChange,
   onRemove,
 }: {
+  project: ProjectDetail
   page: OutlinePage
   index: number
   dragProps: Record<string, unknown>
@@ -381,6 +410,8 @@ function PageCard({
               + 要点
             </button>
           )}
+          {(page.narrative_role || page.speaker_seconds) && <p className="mb-2 text-xs text-accent">{page.narrative_role} {page.speaker_seconds ? `· 约 ${page.speaker_seconds} 秒` : ''}{page.transition && <span className="mt-1 block text-ink-muted">衔接：{page.transition}</span>}</p>}
+          <EvidenceDetails page={page} project={project} />
         </div>
 
         {canRemove && (
@@ -478,6 +509,7 @@ function blankPage(index: number): OutlinePage {
     source_refs: [],
     layout_id: 'bullets',
     page_role: 'content',
+    narrative_role: '', visual_kind: 'auto', transition: '',
   }
 }
 

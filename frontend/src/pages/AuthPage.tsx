@@ -76,7 +76,7 @@ export default function AuthPage() {
           <BrandMark className="mx-auto mb-5 size-11 shadow-card" />
           <h1 className="text-2xl font-semibold tracking-tight">{copy.title}</h1>
           <p className="mt-2 text-sm text-ink-muted">
-            把一段想法变成可以直接编辑的 16:9 PPT
+            AI PPT生成 · 把项目材料变成有依据、可编辑的汇报
           </p>
         </div>
 

@@ -27,6 +27,7 @@ dependencies = [
     "arq>=0.26",
     "httpx[socks]>=0.28.1",
     "fonttools>=4.63.0",
+    "cryptography==50.0.0",
 ]
 
 [build-system]

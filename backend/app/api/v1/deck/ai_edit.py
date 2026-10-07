@@ -32,6 +32,7 @@ from app.schemas.deck import (
     SlidePublic,
 )
 from app.services.deck import load_slides
+from app.services.user_models import project_generator
 from app.worker.context import create_slide_edit_generator
 from app.workflows.slide_edit import (
     build_slide_edit_workflow,
@@ -84,19 +85,20 @@ async def propose_slide_ai_edit(
         layout_tree=layout_tree,
     )
 
-    workflow = build_slide_edit_workflow(create_slide_edit_generator())
     try:
-        operations, discarded, issues, _patched = await run_slide_edit_workflow(
-            workflow,
-            payload=payload,
-            slide_id=str(slide.id),
-            layout_id=slide.layout_id,
-            layout_mode=slide.layout_mode,
-            layout_tree=layout_tree,
-            blocks=blocks,
-            theme_id=project.theme_id,
-            theme_overrides=dict(project.theme_overrides or {}),
-        )
+        async with project_generator(project.id, create_slide_edit_generator) as generator:
+            workflow = build_slide_edit_workflow(generator)
+            operations, discarded, issues, _patched = await run_slide_edit_workflow(
+                workflow,
+                payload=payload,
+                slide_id=str(slide.id),
+                layout_id=slide.layout_id,
+                layout_mode=slide.layout_mode,
+                layout_tree=layout_tree,
+                blocks=blocks,
+                theme_id=project.theme_id,
+                theme_overrides=dict(project.theme_overrides or {}),
+            )
     except LLMNotConfiguredError as error:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -212,9 +214,7 @@ def _apply_one(body: AiEditApplyRequest, blocks, tree):
         if not body.block:
             raise EditStructureError("恢复删除缺少原块内容")
         restored = parse_block(body.block)
-        return restore_block(
-            blocks, tree, block=restored, after_block_id=body.after_block_id
-        )
+        return restore_block(blocks, tree, block=restored, after_block_id=body.after_block_id)
 
     if body.side == "after":
         if not body.block:

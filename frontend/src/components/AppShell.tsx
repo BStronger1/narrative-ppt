@@ -17,10 +17,11 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-6">
           <Link to="/projects" className="flex items-center gap-2.5">
             <BrandMark className="size-7" />
-            <span className="text-[15px] font-semibold tracking-tight">AI PPT</span>
+            <span className="text-[15px] font-semibold tracking-tight">AI PPT生成</span>
           </Link>
 
           <div className="flex items-center gap-2">
+            <Link to="/settings/model" className="px-3 py-2 text-sm text-ink-soft">模型设置</Link>
             {!onCreate && (
               <Button size="sm" onClick={() => navigate('/create')}>
                 <Plus className="size-4" />

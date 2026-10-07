@@ -4,6 +4,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.domain.narrative import NarrativePlan
 from app.domain.outline import OutlinePage
 
 OutlineStatus = Literal["generating", "draft", "confirmed", "failed"]
@@ -16,6 +17,7 @@ class OutlinePublic(BaseModel):
     project_id: uuid.UUID
     status: OutlineStatus
     pages: list[OutlinePage]
+    narrative: NarrativePlan | None = None
     revision: int
     job_id: str | None
     error: str | None

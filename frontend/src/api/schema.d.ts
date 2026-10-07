@@ -271,6 +271,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/presentation-presets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Presentation Presets */
+        get: operations["presentation_presets_api_v1_presentation_presets_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/projects/{project_id}/outline": {
         parameters: {
             query?: never;
@@ -792,6 +809,59 @@ export interface paths {
         get: operations["get_media_api_v1_media__key__get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/model-settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Settings */
+        get: operations["read_settings_api_v1_model_settings_get"];
+        /** Save Settings */
+        put: operations["save_settings_api_v1_model_settings_put"];
+        post?: never;
+        /** Reset Settings */
+        delete: operations["reset_settings_api_v1_model_settings_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/model-settings/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Test Settings */
+        post: operations["test_settings_api_v1_model_settings_test_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/model-settings/models": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** List Models */
+        post: operations["list_models_api_v1_model_settings_models_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1648,6 +1718,17 @@ export interface components {
              */
             status: "ok";
             /**
+             * Generation Mode
+             * @default live
+             * @enum {string}
+             */
+            generation_mode: "demo" | "live";
+            /**
+             * Llm Configured
+             * @default false
+             */
+            llm_configured: boolean;
+            /**
              * Database
              * @enum {string}
              */
@@ -1794,6 +1875,59 @@ export interface components {
             /** Password */
             password: string;
         };
+        /** ModelSettingsInput */
+        ModelSettingsInput: {
+            /** Base Url */
+            base_url: string;
+            /** Model */
+            model: string;
+            /** Api Key */
+            api_key?: string | null;
+        };
+        /** ModelSettingsPublic */
+        ModelSettingsPublic: {
+            /** Custom */
+            custom: boolean;
+            /** Base Url */
+            base_url: string;
+            /** Model */
+            model: string;
+            /** Has Api Key */
+            has_api_key: boolean;
+            /** Default Available */
+            default_available: boolean;
+            /** Allowed Hosts */
+            allowed_hosts: string[];
+        };
+        /** NarrativePlan */
+        NarrativePlan: {
+            /**
+             * Source
+             * @default preset
+             * @enum {string}
+             */
+            source: "ai" | "preset";
+            /** Audience Summary */
+            audience_summary: string;
+            /** Audience Needs */
+            audience_needs: string[];
+            /** Throughline */
+            throughline: string;
+            /** Opening */
+            opening: string;
+            /** Arc */
+            arc: string[];
+            /** Closing Action */
+            closing_action: string;
+            /** Principles */
+            principles?: ("cognitive_load" | "signaling" | "elaboration")[];
+            /** Rationale */
+            rationale: string;
+            /** Assumptions */
+            assumptions?: string[];
+            /** Visual Strategy */
+            visual_strategy: string;
+        };
         /** OutlineGenerateAccepted */
         OutlineGenerateAccepted: {
             /** Job Id */
@@ -1807,6 +1941,24 @@ export interface components {
         };
         /** OutlinePage */
         OutlinePage: {
+            /**
+             * Narrative Role
+             * @default
+             */
+            narrative_role: string;
+            /**
+             * Visual Kind
+             * @default auto
+             * @enum {string}
+             */
+            visual_kind: "auto" | "claim" | "comparison" | "process" | "data" | "image";
+            /** Speaker Seconds */
+            speaker_seconds?: number | null;
+            /**
+             * Transition
+             * @default
+             */
+            transition: string;
             /** Title */
             title: string;
             /** Objective */
@@ -1815,6 +1967,8 @@ export interface components {
             key_points: string[];
             /** Source Refs */
             source_refs?: string[];
+            /** Point Evidence */
+            point_evidence?: components["schemas"]["PointEvidence"][];
             /** Layout Id */
             layout_id: string;
             /**
@@ -1850,6 +2004,7 @@ export interface components {
             status: "generating" | "draft" | "confirmed" | "failed";
             /** Pages */
             pages: components["schemas"]["OutlinePage"][];
+            narrative?: components["schemas"]["NarrativePlan"] | null;
             /** Revision */
             revision: number;
             /** Job Id */
@@ -1923,8 +2078,74 @@ export interface components {
             /** Line Strong */
             line_strong?: string | null;
         };
+        /** PointEvidence */
+        PointEvidence: {
+            /** Point */
+            point: string;
+            /**
+             * Kind
+             * @default missing
+             * @enum {string}
+             */
+            kind: "source" | "inference" | "missing";
+            /** Ref */
+            ref?: string | null;
+            /**
+             * Quote
+             * @default
+             */
+            quote: string;
+        };
+        /** PresentationBrief */
+        PresentationBrief: {
+            /**
+             * Narrative Enabled
+             * @default false
+             */
+            narrative_enabled: boolean;
+            /**
+             * Audience Profile
+             * @default custom
+             * @enum {string}
+             */
+            audience_profile: "academic" | "executive" | "technical" | "investor" | "learner" | "custom";
+            /**
+             * Knowledge Level
+             * @default auto
+             * @enum {string}
+             */
+            knowledge_level: "auto" | "newcomer" | "familiar" | "expert";
+            /**
+             * Narrative Overrides
+             * @default
+             */
+            narrative_overrides: string;
+            /**
+             * Visual Style
+             * @default clean
+             * @enum {string}
+             */
+            visual_style: "clean" | "editorial" | "technical";
+            /**
+             * Scenario
+             * @default general
+             * @enum {string}
+             */
+            scenario: "general" | "defense";
+            /**
+             * Duration Minutes
+             * @default 5
+             */
+            duration_minutes: number;
+            /**
+             * Focus
+             * @default
+             */
+            focus: string;
+        };
         /** ProjectCreate */
         ProjectCreate: {
+            brief?: components["schemas"]["PresentationBrief"];
             /** Title */
             title: string;
             /** Audience */
@@ -1965,6 +2186,7 @@ export interface components {
              * Format: uuid
              */
             id: string;
+            brief?: components["schemas"]["PresentationBrief"];
             /** Title */
             title: string;
             /** Audience */
@@ -2019,6 +2241,7 @@ export interface components {
              * Format: uuid
              */
             id: string;
+            brief?: components["schemas"]["PresentationBrief"];
             /** Title */
             title: string;
             /** Audience */
@@ -2075,6 +2298,7 @@ export interface components {
         };
         /** ProjectUpdate */
         ProjectUpdate: {
+            brief?: components["schemas"]["PresentationBrief"] | null;
             /** Title */
             title?: string | null;
             /** Audience */
@@ -3148,6 +3372,26 @@ export interface operations {
             };
         };
     };
+    presentation_presets_api_v1_presentation_presets_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
     get_outline_api_v1_projects__project_id__outline_get: {
         parameters: {
             query?: never;
@@ -4216,6 +4460,145 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_settings_api_v1_model_settings_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModelSettingsPublic"];
+                };
+            };
+        };
+    };
+    save_settings_api_v1_model_settings_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ModelSettingsInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModelSettingsPublic"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reset_settings_api_v1_model_settings_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModelSettingsPublic"];
+                };
+            };
+        };
+    };
+    test_settings_api_v1_model_settings_test_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ModelSettingsInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_models_api_v1_model_settings_models_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ModelSettingsInput"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {

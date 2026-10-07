@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     app_env: str = "development"
+    demo_mode: bool = False
     # 端口统一使用 39xxx 段，避开各服务默认端口，防止与本机已装的
     # PostgreSQL / Redis / 其他开发服务抢占端口
     database_url: str = "postgresql+asyncpg://aippt:aippt@localhost:39432/aippt"
@@ -18,10 +19,19 @@ class Settings(BaseSettings):
     llm_api_key: str = ""
     llm_base_url: str = "https://api.deepseek.com"
     llm_model: str = "deepseek-v4-flash"
-    # 大纲默认关闭思考模式以满足首个结果 10 秒内返回的目标；
-    # 遇到复杂主题时可通过环境变量开启，不把供应商参数写死在工作流里。
+    # 默认不额外开启供应商思考模式，不承诺固定响应时长。
     llm_thinking_enabled: bool = False
-    llm_timeout_seconds: float = 60
+    llm_timeout_seconds: float = 180
+    model_config_secret: str = ""
+    model_api_allowed_hosts: list[str] = [
+        "api.deepseek.com",
+        "api.openai.com",
+        "www.dmxapi.cn",
+        "dmxapi.cn",
+        "api.siliconflow.cn",
+        "dashscope.aliyuncs.com",
+        "open.bigmodel.cn",
+    ]
     # 单份 PPT 同时生成的页数。调高能缩短总时长，但容易触发供应商限流，
     # 且失败会成片出现；3 是延迟与稳定性之间比较稳妥的取值。
     slide_concurrency: int = 3

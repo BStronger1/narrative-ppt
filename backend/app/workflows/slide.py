@@ -118,8 +118,14 @@ def build_slide_workflow(generator: SlideGenerator):
             "issues": issues,
         }
 
+    def repairable_issues(state: SlideWorkflowState) -> list[StructureIssue]:
+        # 答辩材料不足时保留提示，不因字数少或「待补充」要求模型扩写事实。
+        if state["input"].brief.scenario == "defense" or state["input"].brief.narrative_enabled:
+            return [issue for issue in state["issues"] if issue.severity == "error"]
+        return [issue for issue in state["issues"] if is_repair_worthy(issue)]
+
     async def repair(state: SlideWorkflowState) -> dict:
-        repairable = [issue for issue in state["issues"] if is_repair_worthy(issue)]
+        repairable = repairable_issues(state)
         messages = [_describe(issue) for issue in repairable]
         repaired = state["input"].model_copy(update={"issues": messages})
         return {"input": repaired, "repairs": state.get("repairs", 0) + 1}
@@ -127,7 +133,7 @@ def build_slide_workflow(generator: SlideGenerator):
     def route(state: SlideWorkflowState) -> str:
         if state.get("repairs", 0) >= MAX_REPAIR_ROUNDS:
             return END
-        if any(is_repair_worthy(issue) for issue in state["issues"]):
+        if repairable_issues(state):
             return "repair"
         return END
 

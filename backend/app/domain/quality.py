@@ -156,8 +156,18 @@ def check_duplicate_pages(
     return issues
 
 
-def extract_numbers(text: str) -> list[str]:
-    return _NUMBER_RE.findall(text)
+_QUANTITY_RE = re.compile(
+    r"(?:\d+(?:\.\d+)?|[零一二两三四五六七八九十百千万]+)"
+    r"(?:\s*[-–至]\s*(?:\d+(?:\.\d+)?|[一二两三四五六七八九十百千万]+))?"
+    r"\s*(?:个工作日|个月|小时|分钟|工作日|周|天|年|元|人|条|次|倍|%|％)"
+)
+
+
+def extract_numbers(text: str, *, include_quantities: bool = False) -> list[str]:
+    numbers = _NUMBER_RE.findall(text)
+    if include_quantities:
+        numbers += [re.sub(r"\s+", "", token) for token in _QUANTITY_RE.findall(text)]
+    return numbers
 
 
 def _number_variants(token: str) -> set[str]:
@@ -179,13 +189,15 @@ def _number_variants(token: str) -> set[str]:
 def check_unsourced_numbers(
     slide: Slide,
     source_text: str,
+    *,
+    include_quantities: bool = False,
 ) -> list[StructureIssue]:
     """页面出现具体数字但引用材料中找不到对应数据时告警。
 
     这是提示用户核对来源覆盖情况，不是事实准确性核验。
     """
     body = _slide_body_text(slide)
-    numbers = extract_numbers(body)
+    numbers = extract_numbers(body, include_quantities=include_quantities)
     if not numbers:
         return []
 
@@ -300,8 +312,7 @@ def check_thin_content(
                     slide_id=slide.id,
                     slot_id=block.slot_id,
                     message=(
-                        f"要点偏少：{len(block.items)} 条，"
-                        f"{profile.label}档建议至少 {b_lo} 条"
+                        f"要点偏少：{len(block.items)} 条，{profile.label}档建议至少 {b_lo} 条"
                     ),
                     code="thin_content",
                 )
@@ -334,8 +345,7 @@ def check_thin_content(
                 slide_id=slide.id,
                 slot_id=None,
                 message=(
-                    f"页面下半部空白（填充率 {fill:.0%}），"
-                    "建议补要点、KPI、卡片或视觉块充实版面"
+                    f"页面下半部空白（填充率 {fill:.0%}），建议补要点、KPI、卡片或视觉块充实版面"
                 ),
                 code="thin_content",
             )

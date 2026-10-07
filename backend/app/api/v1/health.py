@@ -4,6 +4,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 from sqlalchemy import text
 
+from app.core.config import get_settings
 from app.core.db import async_session_factory
 from app.core.redis import get_redis
 
@@ -17,6 +18,8 @@ class HealthResponse(BaseModel):
     前端类型由 OpenAPI 生成，接口若只返回裸 dict，生成结果会退化为 object。"""
 
     status: Literal["ok"]
+    generation_mode: Literal["demo", "live"] = "live"
+    llm_configured: bool = False
     database: ComponentState
     redis: ComponentState
 
@@ -43,6 +46,8 @@ async def health() -> HealthResponse:
     # 否则前端无法区分"服务挂了"和"服务在但数据库没起"。
     return HealthResponse(
         status="ok",
+        generation_mode="demo" if get_settings().demo_mode else "live",
+        llm_configured=bool(get_settings().llm_api_key.strip()),
         database=await _probe_database(),
         redis=await _probe_redis(),
     )

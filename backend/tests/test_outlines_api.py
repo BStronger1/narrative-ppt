@@ -446,7 +446,7 @@ async def test_worker_settles_outline_after_last_try(
     outline = await client.get(f"/api/v1/projects/{project['id']}/outline", headers=headers)
     body = outline.json()
     assert body["status"] == "failed"
-    assert body["error"] == "模型生成大纲失败，请稍后重试"
+    assert body["error"] == "模型返回的大纲结构不符合要求，请重试"
 
 
 @pytest.mark.asyncio

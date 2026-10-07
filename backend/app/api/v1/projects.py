@@ -111,6 +111,8 @@ async def update_project(
     _ensure_known_theme(body.theme_id)
 
     data = body.model_dump(exclude_unset=True)
+    if "brief" in data and data["brief"] is None:
+        raise HTTPException(status_code=422, detail="答辩设置不能为空")
     if "theme_id" in data and data["theme_id"] != project.theme_id:
         project.theme_overrides = empty_overrides()
     for field, value in data.items():

@@ -5,13 +5,15 @@ import { Button } from '@/components/ui/Button'
 import { PillSelect } from '@/components/ui/PillSelect'
 import { type DraftMode, useCreateDraft } from '@/features/projects/api'
 import {
-  DEFAULT_THEME_ID,
   PAGE_COUNT_OPTIONS,
   TONE_OPTIONS,
 } from '@/features/projects/options'
 import { ACCEPTED_UPLOAD, type Tone } from '@/features/projects/types'
 import { errorMessage } from '@/lib/errors'
 import { cn } from '@/lib/utils'
+import { DEFENSE_SAMPLE } from '@/features/projects/defense'
+import { AudienceBrief } from '@/features/projects/AudienceBrief'
+import { DEFAULT_BRIEF, type PresentationBrief } from '@/features/projects/audience'
 
 const MODES: Array<{ mode: DraftMode; label: string; icon: typeof Type; hint: string }> = [
   { mode: 'topic', label: '从主题生成', icon: Sparkles, hint: '一句话说清要讲什么' },
@@ -42,12 +44,13 @@ function deriveTitle(mode: DraftMode, content: string, files: File[]): string {
 
 export default function CreatePage() {
   const navigate = useNavigate()
-  const [mode, setMode] = useState<DraftMode>('topic')
+  const [mode, setMode] = useState<DraftMode>('text')
+  const [brief, setBrief] = useState<PresentationBrief>(DEFAULT_BRIEF)
   const [content, setContent] = useState('')
   const [files, setFiles] = useState<File[]>([])
-  const [audience, setAudience] = useState('')
+  const [audience, setAudience] = useState('项目评审老师')
   const [tone, setTone] = useState<NonNullable<Tone>>('professional')
-  const [pageCount, setPageCount] = useState(10)
+  const [pageCount, setPageCount] = useState(6)
   const [layoutMode, setLayoutMode] = useState<'fixed' | 'flex'>('flex')
   const [contentDensity, setContentDensity] = useState<'concise' | 'medium' | 'detailed'>(
     'medium',
@@ -63,13 +66,14 @@ export default function CreatePage() {
     create.mutate(
       {
         mode,
+        brief,
         content: content.trim(),
         files,
         title: deriveTitle(mode, content, files),
         audience: audience.trim() || null,
         tone,
         pageCount,
-        themeId: DEFAULT_THEME_ID,
+        themeId: brief.visual_style === 'editorial' ? 'ivory' : brief.visual_style === 'technical' ? 'midnight' : 'clear',
         layoutMode,
         contentDensity,
         onStep: setStep,
@@ -85,13 +89,20 @@ export default function CreatePage() {
     <div className="bg-aurora min-h-[calc(100vh-3.5rem)] px-6 py-14">
       <div className="mx-auto max-w-3xl">
         <h1 className="text-center text-[clamp(1.75rem,4vw,2.5rem)] font-semibold tracking-tight">
-          想做一份什么 PPT？
+          把项目材料，变成有依据的汇报
         </h1>
         <p className="mt-3 text-center text-sm text-ink-muted">
-          先确认大纲，再生成 16:9 页面，导出为可编辑的 PPTX
+          AI PPT生成 · 为不同听众规划讲述顺序，再生成有依据、可编辑的 PPTX
         </p>
 
-        <div className="mt-8 grid gap-2.5 sm:grid-cols-3">
+        <section className="mt-8 rounded-2xl border border-line bg-surface p-5 shadow-card">
+          <AudienceBrief value={brief} onChange={setBrief} onAudienceChange={setAudience} disabled={busy} />
+          <p className="mt-4 text-xs leading-relaxed text-ink-muted">上传或粘贴可核对的事实与数据。只有主题时会提示需要补充证据。</p>
+          <button type="button" disabled={busy} className="mt-3 text-xs font-medium text-accent hover:underline disabled:opacity-50"
+            onClick={() => { setMode('text'); setContent(DEFENSE_SAMPLE); setPageCount(6) }}>填入演示材料（虚构案例）</button>
+        </section>
+
+        <div className="mt-6 grid gap-2.5 sm:grid-cols-3">
           {MODES.map(({ mode: value, label, icon: Icon, hint }) => (
             <button
               key={value}

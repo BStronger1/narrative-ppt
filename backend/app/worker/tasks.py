@@ -1,3 +1,5 @@
+import asyncio
+import logging
 import uuid
 from typing import Any
 
@@ -6,12 +8,18 @@ from sqlalchemy.orm import selectinload
 
 from app.core.db import async_session_factory
 from app.domain.outline import OutlinePage
-from app.llm.base import OutlineGenerationInput, OutlineGenerator, OutlineSourceSection
-from app.llm.errors import LLMNotConfiguredError
+from app.llm.base import OutlineGenerationInput, OutlineSourceSection
+from app.llm.errors import (
+    InvalidModelOutputError,
+    LLMNotConfiguredError,
+    LLMServiceError,
+    LLMTimeoutError,
+)
 from app.models.project import Project
 from app.schemas.outline import OutlineEvent
 from app.services.outline_inputs import project_input_signature
 from app.services.outline_progress import publish_outline_event
+from app.services.user_models import project_generator
 from app.worker.context import create_outline_generator
 from app.worker.retry import retry_after_failure
 from app.workflows.outline import build_outline_workflow, run_outline_workflow
@@ -28,12 +36,22 @@ async def generate_outline(ctx: dict[str, Any], project_id: str, job_id: str) ->
         return
     payload, input_signature, expected_revision = loaded
 
-    await _progress(project_uuid, 25, "正在规划大纲结构")
-    generator: OutlineGenerator = ctx["outline_generator"]
+    await _progress(project_uuid, 25, "正在分析听众需求、规划叙事与逐页结构")
 
     try:
-        workflow = build_outline_workflow(generator)
-        draft = await run_outline_workflow(workflow, payload)
+        async with project_generator(
+            project_uuid, create_outline_generator, ctx.get("outline_generator")
+        ) as generator:
+
+            async def report_progress(percent, message):
+                await _progress(project_uuid, percent, message)
+
+            workflow = build_outline_workflow(generator, on_progress=report_progress)
+            try:
+                # 在 ARQ 的 15 分钟硬终止前收尾并写入状态，避免永久停在 generating。
+                draft = await asyncio.wait_for(run_outline_workflow(workflow, payload), timeout=600)
+            except TimeoutError as error:
+                raise LLMTimeoutError("大纲生成等待超时，请稍后重试或减少页数") from error
         pages = [OutlinePage(**page.model_dump()) for page in draft.pages]
         await _progress(project_uuid, 90, "正在保存大纲")
         revision = await _save_completed(
@@ -42,8 +60,20 @@ async def generate_outline(ctx: dict[str, Any], project_id: str, job_id: str) ->
             pages,
             input_signature,
             expected_revision,
+            narrative=draft.narrative.model_dump() if draft.narrative else None,
         )
     except Exception as error:
+        # Metadata only: never log provider bodies, keys, prompts or private source material.
+        causes = []
+        current = error
+        while current is not None and len(causes) < 8:
+            causes.append(type(current).__name__)
+            current = current.__cause__
+        logging.getLogger(__name__).warning("Outline failure classes: %s", " -> ".join(causes))
+        if isinstance(error, InvalidModelOutputError):
+            logging.getLogger(__name__).warning(
+                "Outline failure reason: %s", getattr(error, "code", "outline_schema")
+            )
         retry = retry_after_failure(ctx, error)
         if retry is not None:
             await _progress(project_uuid, 30, "模型调用失败，正在重试")
@@ -99,6 +129,7 @@ async def _load_generation_input(
         from app.domain.content_density import normalize_density
 
         payload = OutlineGenerationInput(
+            brief=project.brief or {},
             title=project.title,
             audience=project.audience,
             tone=project.tone,
@@ -115,6 +146,7 @@ async def _save_completed(
     pages: list[OutlinePage],
     input_signature: str,
     expected_revision: int,
+    narrative: dict | None = None,
 ) -> int | None:
     async with async_session_factory() as session:
         result = await session.execute(
@@ -135,6 +167,7 @@ async def _save_completed(
             return None
 
         outline.pages = [page.model_dump(mode="json") for page in pages]
+        outline.narrative = narrative
         outline.input_signature = input_signature
         outline.status = "draft"
         outline.error = None
@@ -183,7 +216,9 @@ async def _progress(project_id: uuid.UUID, progress: int, message: str) -> None:
 
 
 def _public_error(error: Exception) -> str:
-    if isinstance(error, LLMNotConfiguredError):
+    if isinstance(error, (LLMNotConfiguredError, LLMServiceError)):
         return str(error)
+    if isinstance(error, InvalidModelOutputError):
+        return "模型返回的大纲结构不符合要求，请重试"
     # 不把供应商响应或完整输入材料落库，避免错误信息成为敏感数据旁路。
     return "模型生成大纲失败，请稍后重试"

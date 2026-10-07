@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="580" viewBox="0 0 1280 580" role="img" aria-labelledby="title">
+<title id="title">NarrativePPT — AI PPT生成, a personal AI product by BStronger1</title>
+<defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#101B2B"/><stop offset="1" stop-color="#202D3B"/></linearGradient><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#fff" stroke-opacity=".035"/></pattern></defs>
+<rect width="1280" height="580" rx="24" fill="url(#bg)"/><rect width="1280" height="580" rx="24" fill="url(#grid)"/>
+<g font-family="Arial, Microsoft YaHei, sans-serif">
+<rect x="62" y="51" width="38" height="38" rx="9" fill="#D7805F"/><path d="M73 64h17v12H73zM77 60h17v12" fill="none" stroke="#FFF4E9" stroke-width="2"/>
+<text x="115" y="76" font-size="16" font-weight="700" letter-spacing="2" fill="#DBE4EA">BSTRONGER1 / AI PRODUCT</text>
+<text x="62" y="185" font-size="70" font-weight="700" letter-spacing="-3" fill="#FFF8EF">NarrativePPT</text>
+<text x="65" y="237" font-size="30" font-weight="600" fill="#F0AC89">AI PPT生成</text>
+<text x="65" y="301" font-size="26" fill="#E1E8ED">先理解听众，再组织叙事。</text>
+<text x="65" y="341" font-size="19" fill="#9EAFBE">Audience → Story → Evidence → Editable slides</text>
+<g transform="translate(752 98)">
+<rect x="43" y="-16" width="400" height="268" rx="15" fill="#658889" opacity=".24"/><rect x="22" y="3" width="400" height="268" rx="15" fill="#C4785D" opacity=".27"/>
+<rect y="24" width="400" height="268" rx="15" fill="#F7F3EC"/><rect y="24" width="8" height="268" rx="4" fill="#D37D5D"/>
+<text x="31" y="65" font-size="12" font-weight="700" letter-spacing="2" fill="#8B7161">YOUR STORY, WITH EVIDENCE</text>
+<text x="31" y="109" font-size="25" font-weight="700" fill="#243744">把材料变成有依据的演示</text>
+<rect x="31" y="134" width="214" height="5" rx="2" fill="#D9D4CA"/><rect x="31" y="148" width="172" height="5" rx="2" fill="#E0DCD3"/>
+<path d="M57 207H328" stroke="#C6CFC8" stroke-width="2"/><g fill="#4D7774"><circle cx="57" cy="207" r="17"/><circle cx="146" cy="207" r="17"/><circle cx="236" cy="207" r="17"/></g><circle cx="326" cy="207" r="17" fill="#CB7455"/>
+<g fill="white" text-anchor="middle" font-size="13"><text x="57" y="212">01</text><text x="146" y="212">02</text><text x="236" y="212">03</text><text x="326" y="212">04</text></g>
+<g fill="#586A70" text-anchor="middle" font-size="13"><text x="57" y="249">听众</text><text x="146" y="249">叙事</text><text x="236" y="249">依据</text><text x="326" y="249">表达</text></g></g>
+<path d="M64 415H1216" stroke="white" stroke-opacity=".13"/>
+<g fill="#FFF8EF" font-size="27" font-weight="600"><text x="65" y="475">6 类听众</text><text x="475" y="475">5–20 页实测</text><text x="872" y="475">Editable PPTX</text></g>
+<g fill="#95A8B8" font-size="15"><text x="65" y="505">从沟通目标出发</text><text x="475" y="505">真实模型 · 页数与导出验证</text><text x="872" y="505">可编辑内容 · 来源与讲述备注</text></g>
+<text x="65" y="551" fill="#668092" font-size="12" letter-spacing="1">DESIGNED &amp; MAINTAINED BY BSTRONGER1</text>
+</g></svg>

@@ -2,9 +2,11 @@ from typing import Any, Literal, Protocol
 
 from pydantic import BaseModel, Field
 
+from app.domain.brief import PresentationBrief
 from app.domain.content import Block
 from app.domain.content_density import DEFAULT_CONTENT_DENSITY, DEFAULT_PAGE_ROLE
 from app.domain.flex_layout import FlexContainer
+from app.domain.narrative import NarrativePlan, VisualKind
 from app.domain.outline import OutlineDraft
 from app.domain.slide_draft import FlexSlideDraft, SlideDraft
 from app.domain.slide_patch import BlockPatch
@@ -29,6 +31,8 @@ class OutlineSourceSection(BaseModel):
 
 
 class OutlineGenerationInput(BaseModel):
+    narrative: NarrativePlan | None = None
+    brief: PresentationBrief = Field(default_factory=PresentationBrief)
     title: str = Field(min_length=1, max_length=200)
     audience: str | None = Field(default=None, max_length=100)
     tone: str = Field(min_length=1, max_length=32)
@@ -50,6 +54,12 @@ class SlideGenerationInput(BaseModel):
     以及本页引用到的来源片段。页面之间因此互不依赖，可以并发生成。
     """
 
+    brief: PresentationBrief = Field(default_factory=PresentationBrief)
+    narrative: NarrativePlan | None = None
+    narrative_role: str = ""
+    visual_kind: VisualKind = "auto"
+    speaker_seconds: int | None = None
+    transition: str = ""
     deck_title: str
     audience: str | None = None
     tone: str

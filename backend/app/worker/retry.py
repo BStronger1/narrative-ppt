@@ -8,7 +8,7 @@ from typing import Any
 
 from arq import Retry
 
-from app.llm.errors import LLMNotConfiguredError
+from app.llm.errors import LLMNotConfiguredError, LLMServiceError
 
 __all__ = ["MAX_TRIES", "retry_after_failure"]
 
@@ -25,6 +25,8 @@ def retry_after_failure(ctx: dict[str, Any], error: Exception) -> Retry | None:
     """
     if isinstance(error, LLMNotConfiguredError):
         # 缺凭证重试多少次都不会自愈，直接落终态让用户去配置
+        return None
+    if isinstance(error, LLMServiceError) and not error.retryable:
         return None
     if int(ctx.get("job_try", 1)) >= MAX_TRIES:
         return None

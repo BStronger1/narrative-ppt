@@ -1,4 +1,5 @@
-import { Image as ImageIcon, LayoutTemplate, Palette, Wand2 } from 'lucide-react'
+import { BookOpen, Image as ImageIcon, LayoutTemplate, Palette, Wand2 } from 'lucide-react'
+import { EvidencePanel } from '@/features/deck/EvidencePanel'
 import { AiEditPanel } from '@/features/deck/AiEditPanel'
 import type { RailTab } from '@/features/deck/editorTypes'
 import { ImagePanel } from '@/features/deck/ImagePanel'
@@ -10,6 +11,7 @@ import { cn } from '@/lib/utils'
 import type { Theme } from '@/render/types'
 
 const RAIL_TABS: Array<{ tab: RailTab; label: string; icon: typeof Wand2 }> = [
+  { tab: 'evidence', label: '内容来源', icon: BookOpen },
   { tab: 'ai', label: 'AI 修改', icon: Wand2 },
   { tab: 'theme', label: '主题', icon: Palette },
   { tab: 'layout', label: '版式', icon: LayoutTemplate },
@@ -41,6 +43,7 @@ export function EditorRail({
     <div className="flex shrink-0">
       {panelOpen && (
         <aside className="scrollbar-slim w-80 overflow-y-auto border-l border-line bg-surface px-4 py-4">
+          {tab === 'evidence' && <EvidencePanel project={project} slide={slide} />}
           {tab === 'ai' && <AiEditPanel projectId={project.id} slide={slide} />}
           {tab === 'theme' && <ThemePanel project={project} disabled={locked} />}
           {tab === 'layout' && (

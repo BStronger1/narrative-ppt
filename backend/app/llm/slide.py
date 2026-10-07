@@ -5,6 +5,7 @@ import json
 from langchain_core.language_models.chat_models import BaseChatModel
 from pydantic import ValidationError
 
+from app.domain.brief import brief_directive
 from app.domain.content_density import density_prompt_block
 from app.domain.flex_layout import iter_leaf_block_ids
 from app.domain.flex_normalize import normalize
@@ -47,7 +48,7 @@ class DeepSeekSlideGenerator:
         try:
             draft = await self._chat.complete(
                 SlideDraft,
-                system=self._system_prompt(layout),
+                system=self._system_prompt(layout) + "\n" + brief_directive(payload.brief),
                 user=self._user_prompt(payload, layout),
                 purpose="生成页面内容",
             )
@@ -125,11 +126,20 @@ class DeepSeekSlideGenerator:
         )
 
     def _flex_system_prompt(self, payload: SlideGenerationInput) -> str:
-        return _FLEX_SYSTEM_PROMPT + _page_directives(payload)
+        return (
+            _FLEX_SYSTEM_PROMPT + _page_directives(payload) + "\n" + brief_directive(payload.brief)
+        )
 
     def _user_prompt(self, payload: SlideGenerationInput, layout: Layout) -> str:
         body = {
             "deck_title": payload.deck_title,
+            "narrative_plan": payload.narrative.model_dump() if payload.narrative else None,
+            "page_story": {
+                "role": payload.narrative_role,
+                "visual_kind": payload.visual_kind,
+                "seconds": payload.speaker_seconds,
+                "transition": payload.transition,
+            },
             "audience": payload.audience,
             "tone": payload.tone,
             "content_density": payload.content_density,
@@ -149,13 +159,14 @@ class DeepSeekSlideGenerator:
         }
         prompt = (
             "请为以下页面生成正文 JSON。\n"
-            f"{density_prompt_block(payload.content_density, payload.page_role)}\n"
+            f"{_density_directive(payload)}\n"
+            f"{brief_directive(payload.brief)}\n"
             f"{json.dumps(body, ensure_ascii=False)}"
         )
         if payload.issues:
             prompt += (
                 "\n上一次生成存在以下问题，请只修正这些问题并保持其余内容稳定："
-                "若问题是内容过瘦或空话，请充实到密度带，勿超槽位上限；"
+                "仅使用来源中的事实修正，来源不足时保留待补充项，勿超槽位上限；"
                 "不要为消除溢出而删光支撑细节。\n"
                 + "\n".join(f"- {issue}" for issue in payload.issues)
             )
@@ -164,6 +175,13 @@ class DeepSeekSlideGenerator:
     def _flex_user_prompt(self, payload: SlideGenerationInput) -> str:
         body = {
             "deck_title": payload.deck_title,
+            "narrative_plan": payload.narrative.model_dump() if payload.narrative else None,
+            "page_story": {
+                "role": payload.narrative_role,
+                "visual_kind": payload.visual_kind,
+                "seconds": payload.speaker_seconds,
+                "transition": payload.transition,
+            },
             "audience": payload.audience,
             "tone": payload.tone,
             "content_density": payload.content_density,
@@ -184,13 +202,14 @@ class DeepSeekSlideGenerator:
         }
         prompt = (
             "请为以下页面生成灵活布局正文 JSON（blocks + layout_tree）。\n"
-            f"{density_prompt_block(payload.content_density, payload.page_role)}\n"
+            f"{_density_directive(payload)}\n"
+            f"{brief_directive(payload.brief)}\n"
             f"{json.dumps(body, ensure_ascii=False)}"
         )
         if payload.issues:
             prompt += (
                 "\n上一次生成存在以下问题，请只修正这些问题并保持其余内容稳定："
-                "若问题是内容过瘦或空话，请充实到密度带并保持多块结构；"
+                "仅使用来源中的事实修正，来源不足时保留待补充项；"
                 "不要为消除溢出而合并/删掉内容块。\n"
                 + "\n".join(f"- {issue}" for issue in payload.issues)
             )
@@ -214,6 +233,14 @@ class DeepSeekSlideGenerator:
         missing = [slot.id for slot in layout.slots if slot.required and slot.id not in seen]
         if missing:
             raise InvalidSlideOutputError(f"必填槽位缺少内容：{'、'.join(missing)}")
+
+
+def _density_directive(payload: SlideGenerationInput) -> str:
+    return density_prompt_block(
+        payload.content_density,
+        payload.page_role,
+        source_grounded=payload.brief.scenario == "defense" or payload.brief.narrative_enabled,
+    )
 
 
 _FLEX_SYSTEM_PROMPT = (

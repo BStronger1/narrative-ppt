@@ -6,6 +6,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.domain.brief import PresentationBrief
 from app.domain.theme import ThemeOverrides
 from app.ingest.models import SourceSection
 
@@ -28,6 +29,7 @@ LayoutMode = Literal["fixed", "flex"]
 
 
 class ProjectCreate(BaseModel):
+    brief: PresentationBrief = Field(default_factory=PresentationBrief)
     title: str = Field(min_length=1, max_length=200)
     audience: str | None = Field(default=None, max_length=100)
     tone: Tone = "professional"
@@ -38,6 +40,7 @@ class ProjectCreate(BaseModel):
 
 
 class ProjectUpdate(BaseModel):
+    brief: PresentationBrief | None = None
     title: str | None = Field(default=None, min_length=1, max_length=200)
     audience: str | None = Field(default=None, max_length=100)
     tone: Tone | None = None
@@ -72,6 +75,7 @@ class ProjectPublic(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID
+    brief: PresentationBrief = Field(default_factory=PresentationBrief)
     title: str
     audience: str | None
     tone: Tone

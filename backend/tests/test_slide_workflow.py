@@ -107,3 +107,19 @@ async def test_workflow_gives_up_after_one_thin_repair() -> None:
 
     assert len(generator.prompts) == 2
     assert any(issue.code == "thin_content" for issue in issues)
+
+
+@pytest.mark.asyncio
+async def test_defense_preserves_missing_evidence_without_filler_repair() -> None:
+    from app.domain.brief import PresentationBrief
+
+    items = ["用户反馈【待补充：真实用户测试记录】"]
+    generator = ScriptedGenerator([_draft(items)])
+    slide, issues = await run_slide_workflow(
+        build_slide_workflow(generator),
+        _payload(brief=PresentationBrief(scenario="defense")),
+        uuid.uuid4(),
+    )
+    assert len(generator.prompts) == 1
+    assert slide.blocks[1].items == items
+    assert any(issue.code == "empty_phrase" for issue in issues)

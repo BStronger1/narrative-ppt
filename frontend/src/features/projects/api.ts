@@ -67,6 +67,7 @@ export function useDeleteProject() {
 export type DraftMode = 'topic' | 'text' | 'document'
 
 export interface DraftInput {
+  brief?: ProjectCreate['brief']
   mode: DraftMode
   /** topic / text 模式的正文；document 模式忽略 */
   content: string
@@ -97,6 +98,7 @@ export function useCreateDraft() {
         method: 'POST',
         body: JSON.stringify({
           title: input.title,
+          brief: input.brief,
           audience: input.audience,
           tone: input.tone,
           page_count: input.pageCount,

@@ -128,10 +128,18 @@ def effective_block_targets(density: str | None, role: str | None) -> tuple[int,
     return (profile.min_blocks, profile.max_blocks)
 
 
-def density_prompt_block(density: str | None, role: str | None) -> str:
+def density_prompt_block(
+    density: str | None, role: str | None, *, source_grounded: bool = False
+) -> str:
     """写入单页 user/system 的密度与角色约束段落。"""
     profile = get_profile(density)
     page_role = normalize_page_role(role)
+    if source_grounded:
+        return (
+            f"文字量档位：{profile.label}（{profile.id}）。页型角色：{page_role}。"
+            "按材料实际信息量安排内容，不设最低字数或条目数。"
+            "可保留待补充项并写明缺什么材料，不得为丰富版面添加未提供的事实。"
+        )
     min_blocks, max_blocks = effective_block_targets(density, role)
     b_lo, b_hi = profile.target_bullets
     lines = [

@@ -1,4 +1,5 @@
 import asyncio
+import re
 import uuid
 from typing import Any
 
@@ -9,12 +10,13 @@ from sqlalchemy.orm import selectinload
 from app.core.config import get_settings
 from app.core.db import async_session_factory
 from app.domain.content import Slide as SlideContent
+from app.domain.narrative import semantic_skeleton
 from app.domain.outline import OutlinePage
 from app.domain.page_rhythm import allows_callout, skeleton_hint
 from app.domain.validation import StructureIssue
 from app.images.pipeline import ImagePipeline, create_image_pipeline
-from app.llm.base import OutlineSourceSection, SlideGenerationInput, SlideGenerator
-from app.llm.errors import LLMNotConfiguredError
+from app.llm.base import OutlineSourceSection, SlideGenerationInput
+from app.llm.errors import LLMNotConfiguredError, LLMServiceError
 from app.models.project import Project
 from app.models.slide import Slide
 from app.schemas.deck import DeckEvent
@@ -27,6 +29,7 @@ from app.services.deck import (
     outline_pages,
 )
 from app.services.slide_images import resolve_slide_images
+from app.services.user_models import project_generator
 from app.worker.context import create_slide_generator
 from app.workflows.slide import build_slide_workflow, run_slide_workflow
 
@@ -43,32 +46,39 @@ async def generate_deck(ctx: dict[str, Any], project_id: str, slide_ids: list[st
     if context is None:
         return
 
-    generator: SlideGenerator = ctx.get("slide_generator") or create_slide_generator()
-    workflow = build_slide_workflow(generator)
-    owned_client: httpx.AsyncClient | None = None
-    pipeline: ImagePipeline | None = ctx.get("image_pipeline")
-    if pipeline is None:
-        owned_client = httpx.AsyncClient(trust_env=False, proxy=None)
-        pipeline = create_image_pipeline(owned_client)
-    semaphore = asyncio.Semaphore(get_settings().slide_concurrency)
-    cancelled = False
-
-    async def run_one(slide_id: uuid.UUID) -> None:
-        nonlocal cancelled
-        async with semaphore:
-            # 取消只在每页开始前生效：正在跑的那一页让它跑完，
-            # 中途丢弃既浪费了已花的费用，也会留下半截状态。
-            if cancelled or await is_cancelled(project_uuid):
-                cancelled = True
-                return
-            await _generate_one(project_uuid, slide_id, context, workflow, pipeline)
-
     try:
-        await asyncio.gather(*(run_one(slide_id) for slide_id in targets))
-    finally:
-        if owned_client is not None:
-            await owned_client.aclose()
-    await _finish(project_uuid, cancelled=cancelled)
+        async with project_generator(
+            project_uuid, create_slide_generator, ctx.get("slide_generator")
+        ) as generator:
+            workflow = build_slide_workflow(generator)
+            owned_client: httpx.AsyncClient | None = None
+            pipeline: ImagePipeline | None = ctx.get("image_pipeline")
+            if pipeline is None:
+                owned_client = httpx.AsyncClient(trust_env=False, proxy=None)
+                pipeline = create_image_pipeline(owned_client)
+            semaphore = asyncio.Semaphore(get_settings().slide_concurrency)
+            cancelled = False
+
+            async def run_one(slide_id: uuid.UUID) -> None:
+                nonlocal cancelled
+                async with semaphore:
+                    # 取消只在每页开始前生效：正在跑的那一页让它跑完，
+                    # 中途丢弃既浪费了已花的费用，也会留下半截状态。
+                    if cancelled or await is_cancelled(project_uuid):
+                        cancelled = True
+                        return
+                    await _generate_one(project_uuid, slide_id, context, workflow, pipeline)
+
+            try:
+                await asyncio.gather(*(run_one(slide_id) for slide_id in targets))
+            finally:
+                if owned_client is not None:
+                    await owned_client.aclose()
+            await _finish(project_uuid, cancelled=cancelled)
+    except LLMNotConfiguredError as error:
+        for slide_id in targets:
+            await _save_failed(slide_id, _public_error(error))
+        await _finish(project_uuid, cancelled=False)
 
 
 async def _generate_one(
@@ -91,6 +101,12 @@ async def _generate_one(
     page_role = normalize_page_role(getattr(page.page, "page_role", None))
     visual_hint = getattr(page.page, "visual", None)
     payload = SlideGenerationInput(
+        brief=context.brief,
+        narrative=context.narrative,
+        narrative_role=page.page.narrative_role,
+        visual_kind=page.page.visual_kind,
+        speaker_seconds=page.page.speaker_seconds,
+        transition=page.page.transition,
         deck_title=context.title,
         audience=context.audience,
         tone=context.tone,
@@ -109,9 +125,17 @@ async def _generate_one(
         neighbor_titles=context.neighbor_titles(page.position),
         visual_hint=visual_hint,
         # 跨页多样性必须提前分配：各页并发生成，看不到彼此的版式
-        skeleton_hint=skeleton_hint(
-            page.position, page_role=page_role, has_visual=bool(visual_hint)
-        ),
+        skeleton_hint=semantic_skeleton(
+            page.page.visual_kind,
+            has_data=any(
+                re.search(r"\d", context.sections[ref].text)
+                for ref in page.page.source_refs
+                if ref in context.sections
+            ),
+            position=page.position,
+        )
+        if context.narrative and not visual_hint
+        else skeleton_hint(page.position, page_role=page_role, has_visual=bool(visual_hint)),
         allow_callout=allows_callout(page.position),
     )
 
@@ -157,10 +181,14 @@ class DeckContext:
         sections: dict[str, OutlineSourceSection],
         pages: dict[uuid.UUID, "SlideTarget"],
         ordered_titles: list[str],
+        brief: dict | None = None,
+        narrative: dict | None = None,
     ) -> None:
         from app.domain.content_density import normalize_density
 
         self.user_id = user_id
+        self.brief = brief or {}
+        self.narrative = narrative
         self.title = title
         self.audience = audience
         self.tone = tone
@@ -218,6 +246,8 @@ async def _load_context(project_id: uuid.UUID) -> DeckContext | None:
         }
 
         return DeckContext(
+            brief=project.brief,
+            narrative=project.outline.narrative,
             user_id=project.user_id,
             title=project.title,
             audience=project.audience,
@@ -361,7 +391,7 @@ async def _finish(project_id: uuid.UUID, *, cancelled: bool) -> None:
 
 
 def _public_error(error: Exception) -> str:
-    if isinstance(error, LLMNotConfiguredError):
+    if isinstance(error, (LLMNotConfiguredError, LLMServiceError)):
         return str(error)
     # 不把供应商响应或输入材料落库，避免错误信息成为敏感数据旁路
     return "页面生成失败，请重试"

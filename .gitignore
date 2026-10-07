@@ -1,5 +1,4 @@
-# 项目文档
-docs/
+# 产品设计、来源说明与验收截图纳入版本管理
 
 # 操作系统
 .DS_Store
@@ -117,3 +116,12 @@ backend/fonts/*
 # 其他
 *.local
 .history/
+
+# Private deployment state
+model-config.json
+address.json
+supervisord.conf
+backups/
+
+# Retained locally; not part of the maintained Python product
+java_backend/

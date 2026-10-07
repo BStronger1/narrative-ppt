@@ -27,7 +27,10 @@ export function WorkbenchHeader({
         {meta}
       </div>
 
-      <div className="ml-auto flex items-center gap-2">{children}</div>
+      <div className="ml-auto flex shrink-0 items-center gap-2 whitespace-nowrap">
+        <Link to="/settings/model" className="px-2 text-xs text-ink-muted">模型设置</Link>
+        {children}
+      </div>
     </header>
   )
 }

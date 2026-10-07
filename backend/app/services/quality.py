@@ -6,12 +6,16 @@ import uuid
 
 from app.domain.content import Deck as ContentDeck
 from app.domain.export_check import ExportCheckReport, run_export_check
+from app.domain.narrative_quality import review_narrative
 from app.domain.outline import OutlinePage
+from app.domain.quality import check_unsourced_numbers
 from app.domain.theme import resolve_project_theme
+from app.domain.validation import StructureIssue
 from app.llm.base import OutlineSourceSection
 from app.models.project import Project
 from app.models.slide import Slide
 from app.services.deck import outline_pages, to_content_slide
+from app.services.evidence import checked_page
 from app.services.media import load_image, media_key_from_url
 
 
@@ -92,7 +96,7 @@ def slide_roles_map(project: Project, slides: list[Slide]) -> dict[str, str]:
 def build_quality_report(project: Project, slides: list[Slide]) -> ExportCheckReport:
     """可复用的质量报告入口，供导出等接口直接调用。"""
     deck = project_to_content_deck(project, slides)
-    return run_export_check(
+    report = run_export_check(
         deck,
         theme=resolve_project_theme(project),
         slide_titles=slide_titles_map(slides),
@@ -102,3 +106,41 @@ def build_quality_report(project: Project, slides: list[Slide]) -> ExportCheckRe
         load_image=load_image,
         media_key_from_url=media_key_from_url,
     )
+    pages = _page_by_outline_id(project)
+    if getattr(project.outline, "narrative", None):
+        for issue in report.issues:
+            if issue.code == "thin_content":
+                issue.message = (
+                    "本页内容较简洁，请确认核心观点与必要证据已说明；"
+                    "可以保留留白，不必为了填满页面添加数据。"
+                )
+        sources = slide_sources_map(project, slides)
+        for slide in deck.slides:
+            report.issues.extend(
+                check_unsourced_numbers(slide, sources.get(slide.id, ""), include_quantities=True)
+            )
+        report.issues.extend(
+            review_narrative(
+                list(pages.values()),
+                duration_minutes=(project.brief or {}).get("duration_minutes", 5),
+                slide_id=str(slides[0].id) if slides else "deck",
+            )
+        )
+    for slide in slides:
+        page = pages.get(slide.outline_page_id)
+        if page is None or slide.status != "ready":
+            continue
+        evidence = checked_page(page, project).point_evidence
+        missing = sum(item.kind == "missing" for item in evidence)
+        inferred = sum(item.kind == "inference" for item in evidence)
+        if missing or inferred:
+            report.issues.append(
+                StructureIssue(
+                    severity="warning",
+                    code="evidence_review",
+                    slide_id=str(slide.id),
+                    slot_id=None,
+                    message=f"本页大纲有 {missing} 条要点待补充依据、{inferred} 条推断需核对",
+                )
+            )
+    return report

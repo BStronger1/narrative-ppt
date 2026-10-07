@@ -20,6 +20,7 @@ from app.schemas.outline import (
     OutlineRevisionRequest,
     OutlineUpdate,
 )
+from app.services.evidence import checked_page
 from app.services.outline_inputs import migrate_outline_signature, outline_input_matches
 from app.services.outline_progress import outline_events, publish_outline_event
 
@@ -56,6 +57,13 @@ def _validate_pages(project: Project, pages: list) -> None:
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail=f"大纲包含未知布局：{'、'.join(invalid)}",
         )
+    allowed_refs = {
+        f"S{i}:{j}"
+        for i, source in enumerate(project.sources, 1)
+        for j, _ in enumerate(source.sections, 1)
+    }
+    if any(ref not in allowed_refs for page in pages for ref in page.source_refs):
+        raise HTTPException(status_code=422, detail="大纲包含不存在的来源引用")
     if len(pages) != project.page_count:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
@@ -141,7 +149,7 @@ async def update_outline(
     _ensure_revision(outline, body.revision)
     _validate_pages(project, body.pages)
 
-    outline.pages = [page.model_dump(mode="json") for page in body.pages]
+    outline.pages = [checked_page(page, project).model_dump(mode="json") for page in body.pages]
     outline.revision += 1
     await session.commit()
     await session.refresh(outline)
