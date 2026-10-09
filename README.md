@@ -14,7 +14,7 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
 ![Export](https://img.shields.io/badge/Export-Editable_PPTX-C8442A)
 
-[免登录成果预览](https://bstronger1.github.io/narrative-ppt/) · [快速运行](#快速运行) · [失败与修复复盘](docs/ENGINEERING_STORY.md) · [English](README.en.md)
+[免登录成果预览](https://bstronger1.github.io/narrative-ppt/) · [快速运行](#快速运行) · [心理学设计故事](docs/PRODUCT_STORY.md) · [English](README.en.md)
 
 </div>
 
@@ -22,9 +22,10 @@ NarrativePPT 把项目材料转成适合具体听众的演示文稿。选择听�
 
 ## 先看它解决什么问题
 
-同一份材料，给评审讲需要论据与边界，给技术同行讲需要实现与取舍。NarrativePPT 先明确听众和目标，再安排叙事；生成后仍保留编辑和来源审阅环节。
+同一份材料，给评审讲需要论据与边界，给技术同行讲需要实现与取舍。NarrativePPT 参考认知负荷理论、多媒体学习原则与 ELM，把听众、知识基础、目标和时长转化为 Prompt 与叙事计划的设计约束；生成后保留编辑和来源审阅环节。理论用于指导设计，尚未开展听众效果实验。
 
 - **先看成果：** [打开免登录预览页](https://bstronger1.github.io/narrative-ppt/)，浏览真实截图和 PPTX 原文摘录，下载 5 / 10 / 15 / 20 页样例。预览为静态展示，不调用模型。
+- **了解设计：** [从心理学设计到 LLM 工作流](docs/PRODUCT_STORY.md)，从师兄的听众建议出发，讲清三个理论如何对应产品行为。
 - **再看实现：** [5 页能生成，20 页却超时：一次 LLM 工作流修复](docs/ENGINEERING_STORY.md)，讲清分批、结构校验、局部重试和超时预算的取舍。
 - **带着问题试用：** [提交听众场景与使用反馈](https://github.com/BStronger1/narrative-ppt/issues/new?template=use_case.yml)。觉得有用，可以 Star 留作下次使用。
 
@@ -40,7 +41,7 @@ NarrativePPT 把项目材料转成适合具体听众的演示文稿。选择听�
 </tr>
 </table>
 
-截图来自虚构测试案例。当前服务部署于受限网络，未提供公共在线试用地址。可在本地使用演示模式，或下载真实生成的 [5 页](examples/deepseek-fixed-20261006/5-pages.pptx)、[10 页](examples/deepseek-fixed-20261006/10-pages.pptx)、[15 页](examples/deepseek-fixed-20261006/15-pages.pptx)、[20 页 PPTX](examples/deepseek-fixed-20261006/20-pages.pptx)。
+截图来自虚构测试案例。维护者确认系统已部署并在课题组中使用；服务位于受限网络，未提供公共在线生成地址，课题组使用尚无量化效果报告。可在本地使用演示模式，或下载真实生成的 [5 页](examples/deepseek-fixed-20261006/5-pages.pptx)、[10 页](examples/deepseek-fixed-20261006/10-pages.pptx)、[15 页](examples/deepseek-fixed-20261006/15-pages.pptx)、[20 页 PPTX](examples/deepseek-fixed-20261006/20-pages.pptx)。
 
 ## 我重点完成的产品与工程设计
 
@@ -85,7 +86,7 @@ flowchart LR
 | 15 | 112.49 s | 72.47 s | 15 / 15 | 通过 | 8 |
 | 20 | 140.62 s | 92.68 s | 20 / 20 | 通过 | 14 |
 
-同版后端回归：**442 passed / 3 skipped**。跳过项为本地缺少度量字体的精确路径检查。独立回读确认页数、每页可编辑文字、来源/讲述备注和时间预算。历史失败及修复过程保留在 [验收记录](docs/VALIDATION.md)，不将单案例结果包装成成功率或性能 SLA。
+同版后端回归：**442 passed / 3 skipped**，包含既有与新增测试。跳过项为本地缺少度量字体的精确路径检查。独立回读确认页数、每页可编辑文字、来源/讲述备注和时间预算。历史失败及修复过程保留在 [验收记录](docs/VALIDATION.md)，不将单案例结果包装成成功率或性能 SLA。
 
 ## 快速运行
 

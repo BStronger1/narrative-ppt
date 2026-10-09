@@ -3,7 +3,7 @@
 **Start with the audience. Plan the story. Keep the evidence visible.**
 
 A personal AI product designed and maintained by [BStronger1](https://github.com/BStronger1).
-[中文](README.md) · [Output preview](https://bstronger1.github.io/narrative-ppt/) · [Engineering story (Chinese)](docs/ENGINEERING_STORY.md)
+[中文](README.md) · [Output preview](https://bstronger1.github.io/narrative-ppt/) · [Design story (Chinese)](docs/PRODUCT_STORY.md) · [Engineering notes](docs/ENGINEERING_STORY.md)
 
 ![NarrativePPT](docs/assets/narrative-ppt-cover.svg)
 
@@ -20,7 +20,7 @@ The preview is static. Live generation requires a local deployment and model cre
 
 ## What I focused on
 
-- **Audience-aware planning:** a narrative plan before the outline, with page roles, transitions and timing.
+- **Audience-aware planning:** cognitive load, multimedia learning and ELM inform the design prompts, narrative plan, page roles and timing. They are design references; no audience-outcome experiment has been conducted.
 - **Evidence handling:** source excerpts, reference validation, and explicit inference / missing-evidence labels. This is not semantic fact-checking or RAG.
 - **Reliable long outlines:** global structure first, then batches of up to five pages with two concurrent requests, schema checks and one local retry for invalid batches.
 - **Personal model settings:** per-account model configuration with encrypted API keys.
@@ -32,7 +32,7 @@ LangGraph coordinates workflow stages; LangChain handles model calls and Pydanti
 
 On 2026-10-06, `DMXAPI-deepseek-v4-flash` completed 5, 10, 15 and 20-slide runs using the same fictional input. Exported files were read back to verify slide count, editable text and notes. Quality warnings remained: 3, 7, 8 and 14 respectively.
 
-The corresponding local backend regression run reported **442 passed / 3 skipped** (font-dependent checks). This is one case per length, not a success-rate benchmark, load test or guarantee of factual accuracy.
+The corresponding local backend regression run reported **442 passed / 3 skipped**, including existing and new tests (skips are font-dependent checks). This is one case per length, not a success-rate benchmark, load test or guarantee of factual accuracy.
 
 Read [the failure history and fixes](docs/LONG_OUTLINE_FIX.md).
 
