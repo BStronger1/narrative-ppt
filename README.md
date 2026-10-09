@@ -14,11 +14,19 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
 ![Export](https://img.shields.io/badge/Export-Editable_PPTX-C8442A)
 
-[快速运行](#快速运行) · [产品演示](#产品演示) · [工程设计](#工程设计) · [真实测试](#真实测试) · [个人主页](https://bstronger1.github.io/cv/)
+[免登录成果预览](https://bstronger1.github.io/narrative-ppt/) · [快速运行](#快速运行) · [失败与修复复盘](docs/ENGINEERING_STORY.md) · [English](README.en.md)
 
 </div>
 
 NarrativePPT 把项目材料转成适合具体听众的演示文稿。选择听众与沟通目标，上传材料，审阅 AI 叙事和可追溯大纲，再生成、编辑并导出原生 PPTX。适用于项目答辩、技术分享、管理汇报和教学讲解。
+
+## 先看它解决什么问题
+
+同一份材料，给评审讲需要论据与边界，给技术同行讲需要实现与取舍。NarrativePPT 先明确听众和目标，再安排叙事；生成后仍保留编辑和来源审阅环节。
+
+- **先看成果：** [打开免登录预览页](https://bstronger1.github.io/narrative-ppt/)，浏览真实截图和 PPTX 原文摘录，下载 5 / 10 / 15 / 20 页样例。预览为静态展示，不调用模型。
+- **再看实现：** [5 页能生成，20 页却超时：一次 LLM 工作流修复](docs/ENGINEERING_STORY.md)，讲清分批、结构校验、局部重试和超时预算的取舍。
+- **带着问题试用：** [提交听众场景与使用反馈](https://github.com/BStronger1/narrative-ppt/issues/new?template=use_case.yml)。觉得有用，可以 Star 留作下次使用。
 
 ## 产品演示
 

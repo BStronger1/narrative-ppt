@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NarrativePPT · AI PPT生成 — 先理解听众，再组织叙事</title>
+<meta name="description" content="BStronger1 的个人 AI 产品。了解听众驱动的叙事规划、长大纲分批生成和材料溯源，免登录查看真实模型生成的 5/10/15/20 页 PPTX 样例。">
+<meta property="og:title" content="NarrativePPT · 先理解听众，再组织叙事">
+<meta property="og:description" content="真实 PPTX 样例、AI 工作流与长大纲失败复盘。由 BStronger1 设计与维护。">
+<meta property="og:type" content="website"><meta property="og:url" content="https://bstronger1.github.io/narrative-ppt/">
+<meta property="og:image" content="https://bstronger1.github.io/narrative-ppt/assets/social-preview.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://bstronger1.github.io/narrative-ppt/">
+<link rel="stylesheet" href="assets/site.css"><script src="assets/site.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">跳到主要内容</a>
+<header><nav aria-label="主导航"><a class="brand" href="./">NarrativePPT<small>BY BSTRONGER1</small></a><div class="navlinks"><a href="#preview">看效果</a><a href="#engineering">看实现</a><a href="https://github.com/BStronger1/narrative-ppt">GitHub ↗</a></div></nav></header>
+<main id="main" class="wrap">
+<section class="hero">
+<div><p class="eyebrow">AI PRESENTATIONS / PERSONAL PROJECT</p><h1>同一份材料，<br>讲给<em>不同的人。</em></h1><p class="lead">先理解听众和沟通目标，再规划叙事、核对材料、生成可编辑 PPTX。让 AI 帮你组织讲述的顺序。</p><div class="actions"><a class="btn" href="#samples">查看真实生成样例 ↓</a><a class="btn secondary" href="https://github.com/BStronger1/narrative-ppt#快速运行">本地运行 ↗</a></div><p class="micro">成果预览无需登录或 API Key · 在线生成服务需自行部署</p></div>
+<div class="story-card"><p class="eyebrow">FROM MATERIAL TO STORY</p><div class="story-row"><span class="num">01</span><div><strong>听众与目标</strong><p>给谁讲？希望他们理解什么、决定什么？</p></div></div><div class="story-row"><span class="num">02</span><div><strong>叙事与依据</strong><p>先组织讲述顺序，让材料、推断和缺口可见。</p></div></div><div class="story-row"><span class="num">03</span><div><strong>编辑与交付</strong><p>审阅每一页，导出带讲述备注的可编辑 PPTX。</p></div></div></div>
+</section>
+<div class="facts"><div class="fact"><b>6 类听众</b><span>预设可调整，目标由你定义</span></div><div class="fact"><b>5 → 20 页</b><span>四档真实模型生成验收</span></div><div class="fact"><b>自己的模型</b><span>自选兼容接口与 API Key</span></div></div>
+<section id="preview" class="section">
+<div class="section-head"><div><p class="eyebrow">PRODUCT WALKTHROUGH</p><h2>先看一次完整的使用路径</h2></div><p class="sub">以下是应用截图，材料来自虚构测试案例。</p></div>
+<div class="tabs" role="group" aria-label="查看应用截图"><button class="tab" type="button" data-screen="audience" aria-pressed="false" aria-controls="product-shot">01 听众与目标</button><button class="tab" type="button" data-screen="narrative" aria-pressed="false" aria-controls="product-shot">02 叙事方案</button><button class="tab" type="button" data-screen="editor" aria-pressed="true" aria-controls="product-shot">03 编辑与溯源</button></div>
+<figure class="screen"><img id="product-shot" src="screenshots/live-editor.jpg" alt="真实模型生成后的编辑器和来源面板" width="1440" height="900"><figcaption id="shot-caption" aria-live="polite">03 / 真实应用截图：编辑页面，查看材料来源，导出 PPTX。</figcaption></figure>
+<noscript><p>还可以直接查看<a href="screenshots/audience-settings.jpg">听众设置</a>与<a href="screenshots/narrative-plan.jpg">叙事方案</a>截图。</p></noscript>
+</section>
+<section id="samples" class="section">
+<div class="section-head"><div><p class="eyebrow">REAL MODEL OUTPUTS</p><h2>打开产物，再判断有没有用</h2></div><p class="sub">实际模型：DMXAPI-deepseek-v4-flash</p></div>
+<div class="two-col">
+<div class="panel"><h3>四份未手工润色的 PPTX</h3><p class="sub">同一份虚构材料，学术听众，2026-10-06 实测。下载后可检查文字、版式和讲述备注。</p>
+<div class="download-grid">
+<a class="download" href="https://github.com/BStronger1/narrative-ppt/raw/refs/heads/main/examples/deepseek-fixed-20261006/5-pages.pptx"><strong>5 页 ↗</strong><span>大纲 70.37 s · 3 条质量提示</span></a>
+<a class="download" href="https://github.com/BStronger1/narrative-ppt/raw/refs/heads/main/examples/deepseek-fixed-20261006/10-pages.pptx"><strong>10 页 ↗</strong><span>大纲 82.37 s · 7 条质量提示</span></a>
+<a class="download" href="https://github.com/BStronger1/narrative-ppt/raw/refs/heads/main/examples/deepseek-fixed-20261006/15-pages.pptx"><strong>15 页 ↗</strong><span>大纲 112.49 s · 8 条质量提示</span></a>
+<a class="download" href="https://github.com/BStronger1/narrative-ppt/raw/refs/heads/main/examples/deepseek-fixed-20261006/20-pages.pptx"><strong>20 页 ↗</strong><span>大纲 140.62 s · 14 条质量提示</span></a>
+</div><p class="note">每档一轮，均完成生成和 PPTX 回读。质量提示仍需处理；这不是成功率或性能承诺。<a href="https://github.com/BStronger1/narrative-ppt/blob/main/docs/LONG_OUTLINE_FIX.md">查看完整验收记录 ↗</a></p></div>
+<div class="panel"><h3>5 页样例 · 原文摘录</h3><p class="sub">以下为 PPTX 中直接提取的文字，不代表实际幻灯片排版。案例中的“失物招领平台”是虚构素材，不是本产品。</p><div class="sample"><details><summary><span class="sample-page">01</span>校园失物找得到吗？一个关键词检索原型的验证</summary><p>校园失物招领平台：虚构软件验收材料</p><p>学生需翻遍多个群聊查找失物，认领后消息仍被转发
+缺少统一入口：发布、检索与状态跟踪</p><p>原型聚焦：发布、分类检索、状态更新
+未实现：图片识别、智能匹配、支付、跨校区推荐</p><p>12条
+人工构造测试记录
+8条待认领，4条已认领；证件4、电子3、日用品5</p><p>以下项目、记录和测试结果均为人工构造的验收场景，不代表真实业务成绩。所有数值只用于验证PPT生成，不得推断真实用户、效率提升、商业收益或上线日期。</p></details>
+<details><summary><span class="sample-page">02</span>为什么选择关键词搜索而非语义检索？</summary><p>可解释性强，便于调试与定位问题
+无需外部服务，降低系统依赖</p><p>可能遗漏同义表述，需用户适配关键词
+未与语义检索对比准确率（备选方向，尚未实施）</p><p>此取舍基于设计解释，非经实验验证的最优结论。</p></details>
+<details><summary><span class="sample-page">03</span>本地验证核心路径：发布→检索→状态更新</summary><p>12
+构造测试记录（条）
+覆盖证件、电子设备、日用品三类</p><p>8 待认领 / 4 已认领
+状态分布
+用于检查状态标签与更新流程</p><p>拾获者填写描述与类别 → 记录保存
+失主通过关键词和分类筛选候选物品
+线下人工核验身份 → 状态更新为已认领</p><p>搜索命中仅缩小候选范围，不自动判定归属；核验仍需人工介入。</p></details>
+<details><summary><span class="sample-page">04</span>已实现 vs 未验证：边界在哪里？</summary><p>页面开发、发布/检索/状态接口、本地数据准备与基本功能测试——已由个人完成
+用户角色（失主、拾获者、管理员）来自场景设定，尚未经用户访谈验证</p><p>高并发更新、误操作恢复、恶意认领防护——均未验证
+超长输入、特殊字符、异常网络等查询边界未覆盖</p></details>
+<details><summary><span class="sample-page">05</span>一个可讨论的问题：不绑定身份，如何提高认领可信度？</summary><p>原型已连接发布、检索和状态展示的基本流程，本地虚构数据可用于演示
+真实用户价值、规模化性能及完整安全性仍待验证
+待开展：异常输入测试、网络中断恢复观察、用户可用性测试与同义词查询案例</p><p>核心路径可演示
+当前阶段
+基于人工构造测试数据，不代表真实用户效率</p><p>各项均属计划，未指定完成日期、预算、负责人数量或达标阈值。不能声称节省时间或提高成功率。</p></details></div></div>
+</div>
+</section>
+<section id="engineering" class="section">
+<div class="section-head"><div><p class="eyebrow">ENGINEERING NOTES</p><h2>5 页能生成，20 页为什么失败？</h2></div></div>
+<div class="two-col"><div><p>最初，长大纲在模型读取阶段超时。分批后又暴露出页数与证据类型错误。修复涉及输出规模、业务约束、重试边界和后台任务状态。</p>
+<div class="pipeline">全篇结构规划 → 每批最多 5 页 → 两批并发<br>Schema 与业务校验 → 失败批次局部重试 → 按页序合并</div>
+<p class="note">LangGraph 管理阶段；LangChain 对接模型；Pydantic 校验结构。当前参数未经过系统调优，分批也会增加调用次数。</p>
+<div class="stack"><span>LangGraph</span><span>LangChain</span><span>Pydantic</span><span>FastAPI</span><span>Redis / ARQ</span><span>python-pptx</span></div><a class="btn secondary" href="https://github.com/BStronger1/narrative-ppt/blob/main/docs/ENGINEERING_STORY.md">读完整的失败与修复复盘 ↗</a></div>
+<div class="panel"><h3>带着自己的材料运行</h3><p class="sub">Windows 安装 Python 3.12+、Node.js 22.22+，启动 Docker Desktop 后：</p><pre class="code"><code>git clone https://github.com/BStronger1/narrative-ppt.git
+cd narrative-ppt
+powershell -ExecutionPolicy Bypass -File ./scripts/start.ps1 -Demo</code></pre><p class="note">Demo 使用规则摘录，不调用模型。真实 AI 生成需关闭演示模式并配置模型接口。<a href="https://github.com/BStronger1/narrative-ppt#快速运行">完整启动与配置说明 ↗</a></p></div></div>
+</section>
+<section class="closing"><div><p class="eyebrow">BUILD WITH REAL FEEDBACK</p><h2>你的下一次汇报，卡在哪一步？</h2><p class="sub">告诉我听众、页数和最需要改进的一点。觉得有用，也可以 Star 留作下次使用。</p></div><div class="actions"><a class="btn" href="https://github.com/BStronger1/narrative-ppt/issues/new?template=use_case.yml">提交使用反馈 ↗</a><a class="btn secondary" href="https://github.com/BStronger1/narrative-ppt">在 GitHub 查看 / Star ↗</a></div></section>
+</main>
+<footer><div class="wrap"><span>Designed & maintained by <a href="https://github.com/BStronger1">BStronger1</a> · AI PPT生成</span><span><a href="https://github.com/BStronger1/narrative-ppt/blob/main/docs/NOTICE.md">来源与权利记录</a> · <a href="https://github.com/BStronger1/narrative-ppt/blob/main/README.en.md">English</a> · 静态成果预览，无模型调用</span></div></footer>
+</body></html>

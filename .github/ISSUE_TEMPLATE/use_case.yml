@@ -1,0 +1,36 @@
+name: 使用反馈 / Use case
+description: 告诉我你给谁讲、卡在哪一步，以及什么结果才算有用。
+title: "[Feedback] "
+body:
+  - type: markdown
+    attributes:
+      value: "感谢试用。请使用虚构或可公开材料，不提交 API Key、私人文档或原始配置。安全问题请使用仓库的私下漏洞报告。"
+  - type: dropdown
+    id: tried
+    attributes:
+      label: 你体验了什么？
+      options:
+        - 成果预览 / 下载样例
+        - 本地演示模式
+        - 真实模型生成
+    validations:
+      required: true
+  - type: textarea
+    id: audience
+    attributes:
+      label: 场景和听众
+      description: 例如向技术同行讲项目设计，10 页，10 分钟。说明希望听众理解或决定什么。
+    validations:
+      required: true
+  - type: textarea
+    id: friction
+    attributes:
+      label: 最需要改进的一点
+      description: 哪一步或哪一页出了问题？你期望怎样的结果？
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 可公开的复现材料（可选）
+      description: 模型名称、页数、最小材料、已脱敏截图；无需密钥。
